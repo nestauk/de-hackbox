@@ -55,6 +55,29 @@ async def process_url(events):
             await process_text.send(value=page)
 
 
+# @app.agent(done_pages)
+# async def url_already_processed(url_events):
+#     print('checking if done...')
+#     async for event in url_events():
+#         if event.status_code
+
+#     # async for i, event in url_events.stream()\
+#     #                                 .filter(lambda event: event['url'] == url and event['status_code'] == 200)\
+#     #                                 .enumerate(1):
+#     #     print(i, event)
+#     #     break
+#     i = 1
+#     return i > 0
+
+def already_done_url(url):
+    return False
+
+
+def _urls_from_html(text):
+    for url in ['https://www.manchester.ac.uk/research/']:
+        yield url
+
+
 @app.agent(rendered_pages)
 async def process_text(pages):
     """"""
@@ -65,10 +88,12 @@ async def process_text(pages):
             object = await s3.Object('faust-sandbox', name)
             await object.put(Body=json.dumps(text))
         if page.depth == MAX_DEPTH:
-            return
-
-        # async for next_url in _urls_from_html(text):
-        #     # TODO: IF URL NOT IN QUEUE ALREADY
-        #     UrlEvent.send(url=next_url,
-        #                   domain=domain,
-        # parent=url,
+            continue
+        for next_url in _urls_from_html(text):
+            if already_done_url(next_url):
+                continue
+            url_event = UrlEvent(url=next_url,
+                                 domain=page.domain,
+                                 parent=page.url,
+                                 depth=int(page.depth)+1)
+            await process_url.send(value=url_event)
