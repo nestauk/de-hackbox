@@ -8,10 +8,12 @@ import requests
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 
-MAX_DEPTH=2
+MAX_DEPTH = 2
+INVISIBLE_NAMES = ['style', 'script', 'head', 'title', 'meta', '[document]']
+
 
 def _tag_visible(element):
-    if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
+    if element.parent.name in INVISIBLE_NAMES:
         return False
     if isinstance(element, Comment):
         return False
@@ -31,18 +33,18 @@ def process_url(url, domain):
     """Map URL to {status code of requests} and {rendered text}"""
     r = requests.get(url)
     if r.status_code == 200:
-        RenderedText.send(url, domain=domain, text=r.content.decode('utf-8'), depth=depth)
+        RenderedText.send(url, domain=domain,
+                          text=r.content.decode('utf-8'), depth=depth)
     StatusCodes.send(url, domain=domain, status_code=r.status_code)
     StatusCodeTable[r.status_code] += 1
 
 
-def process_text(url, domain, text, depth):
+async def process_text(url, domain, text, depth):
     """"""
     text = _text_from_html(text)
     # TODO: boto3.dump(text)
     if depth == MAX_DEPTH:
         return
-    async for next_url in _urls_from_html(text)
+    async for next_url in _urls_from_html(text):
         # TODO: IF URL NOT IN QUEUE ALREADY
         UrlProcessor.send(next_url, domain=domain, depth=depth+1, parent=url)
-
