@@ -1,0 +1,1 @@
+faust -A app send urls '{"url": "http://manchester.ac.uk/", "name": "Manchester"}'
