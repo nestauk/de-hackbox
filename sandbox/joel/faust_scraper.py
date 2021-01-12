@@ -28,7 +28,6 @@ class RenderedPage(faust.Record, serializer="json"):
     domain: str
     depth: int
     html: str
-    status_code: int
 
 
 url_events = app.topic('url_events',
@@ -44,53 +43,48 @@ status_code_counts = app.Table('status_code_counts',
 async def process_url(events):
     """Map URL to {status code of requests} and {rendered text}"""
     async for event in events:
-        print(event.url)
+        # Try to hit the page
         r = requests.get(event.url)
         status_code_counts[r.status_code] += 1
+        # If successful, send the page off to be parsed
         if r.status_code == 200:
-            print("-->", r.encoding)
             page = RenderedPage(url=event.url,
                                 domain=event.domain,
                                 html=r.content.decode(r.encoding),
-                                status_code=r.status_code,
                                 depth=event.depth)
             await process_text.send(value=page)
 
 
-# @app.agent(done_pages)
-# async def url_already_processed(url_events):
-#     print('checking if done...')
-#     async for event in url_events():
-#         if event.status_code
-
-#     # async for i, event in url_events.stream()\
-#     #                                 .filter(lambda event: event['url'] == url and event['status_code'] == 200)\
-#     #                                 .enumerate(1):
-#     #     print(i, event)
-#     #     break
-#     i = 1
-#     return i > 0
-
 def already_done_url(url):
+    """
+    Dummy function: need to work out how to check if
+    RenderedPage already exists for this URL
+    """
     return False
 
 
 @app.agent(rendered_pages)
 async def process_text(pages):
-    """"""
+    """Extract text and yield any URLs found on the page"""
     async for page in pages:
+        # Extract text and save to S3
         text = _text_from_html(page.html)
         async with aioboto3.resource("s3") as s3:
             name = f'joel/{page.url.replace("/","|")}.json'
             object = await s3.Object('faust-sandbox', name)
             await object.put(Body=json.dumps(text))
+        # Don't go beyond MAX DEPTH
         if page.depth == MAX_DEPTH:
             continue
+        # Yield any URLs found
         for next_url in _urls_from_html(page.html):
+            # Don't go to external URLs
             if page.domain not in next_url:
                 continue
+            # Don't redo any done pages
             if already_done_url(next_url):
                 continue
+            # Yield away
             url_event = UrlEvent(url=next_url,
                                  domain=page.domain,
                                  parent=page.url,

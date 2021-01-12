@@ -1,9 +1,6 @@
 from unittest import mock
-from app import INVISIBLE_NAMES
-from app import _tag_visible
-from app import _text_from_html
-from app import process_url
-from app import process_text
+
+from utils import INVISIBLE_NAMES, _tag_visible, _text_from_html
 
 
 def _make_element(name):
