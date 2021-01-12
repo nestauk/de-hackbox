@@ -20,3 +20,9 @@ def _text_from_html(body):
     stripped_text = map(lambda x: x.extract().strip(), visible_texts)
     non_empty_text = filter(lambda x: len(x) > 1, stripped_text)
     return list(non_empty_text)
+
+
+def _urls_from_html(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    for link in soup.find_all('a', href=True):
+        yield link['href']

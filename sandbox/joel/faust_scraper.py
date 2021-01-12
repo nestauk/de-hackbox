@@ -5,7 +5,7 @@ import aioboto3
 import faust
 import requests
 
-from utils import _tag_visible, _text_from_html
+from utils import _tag_visible, _text_from_html, _urls_from_html
 
 MAX_DEPTH = 2
 PARTITIONS = 4
@@ -44,12 +44,14 @@ status_code_counts = app.Table('status_code_counts',
 async def process_url(events):
     """Map URL to {status code of requests} and {rendered text}"""
     async for event in events:
+        print(event.url)
         r = requests.get(event.url)
         status_code_counts[r.status_code] += 1
         if r.status_code == 200:
+            print("-->", r.encoding)
             page = RenderedPage(url=event.url,
                                 domain=event.domain,
-                                html=r.content.decode('utf-8'),
+                                html=r.content.decode(r.encoding),
                                 status_code=r.status_code,
                                 depth=event.depth)
             await process_text.send(value=page)
@@ -73,11 +75,6 @@ def already_done_url(url):
     return False
 
 
-def _urls_from_html(text):
-    for url in ['https://www.manchester.ac.uk/research/']:
-        yield url
-
-
 @app.agent(rendered_pages)
 async def process_text(pages):
     """"""
@@ -89,7 +86,9 @@ async def process_text(pages):
             await object.put(Body=json.dumps(text))
         if page.depth == MAX_DEPTH:
             continue
-        for next_url in _urls_from_html(text):
+        for next_url in _urls_from_html(page.html):
+            if page.domain not in next_url:
+                continue
             if already_done_url(next_url):
                 continue
             url_event = UrlEvent(url=next_url,
