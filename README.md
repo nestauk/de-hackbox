@@ -3,7 +3,9 @@
 
 In Jan 2021 we did a mini hack-week to play around with Faust and Kafka. In the end, we decided to try to use Faust/Kafka for crawling large websites by recursively queuing internal links.
 
-Our various attempts can be found the `sandbox` directory.
+Our various attempts can be found the `sandbox` directory:
+
+* [Joel's attempt](sandox/joel/)
 
 # Tutorials and documentation
 
