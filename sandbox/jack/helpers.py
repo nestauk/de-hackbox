@@ -1,4 +1,5 @@
 import requests
+import lxml
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 
@@ -6,6 +7,8 @@ INVISIBLE_NAMES = ['style', 'script', 'head', 'title', 'meta', '[document]']
 
 
 def _tag_visible(element):
+    """ Checks if element is visible
+    """
     if element.parent.name in INVISIBLE_NAMES:
         return False
     if isinstance(element, Comment):
@@ -14,6 +17,8 @@ def _tag_visible(element):
 
 
 def _text_from_html(body):
+    """ Gets text from body of html
+    """
     soup = BeautifulSoup(body, 'html.parser')
     texts = soup.findAll(text=True)
     visible_texts = filter(_tag_visible, texts)
@@ -23,6 +28,8 @@ def _text_from_html(body):
 
 
 def _urls_from_html(html):
-    soup = BeautifulSoup(html, 'html.parser')
+    """ Retrieves URLs from HTML
+    """
+    soup = BeautifulSoup(html, 'lxml')
     for link in soup.find_all('a', href=True):
         yield link['href']

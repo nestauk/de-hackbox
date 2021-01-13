@@ -35,7 +35,8 @@ successful_urls = app.topic("successful_urls", value_type=SuccessPage)
 
 @app.agent(urls)
 async def process_url(urls):
-    """Map URL to {status code of requests} and {rendered text}"""
+    """Processes the urls into successful pages
+    """
     async for url in urls:
         r = requests.get(url.url)
         if r.status_code == 200:
@@ -51,31 +52,29 @@ async def process_url(urls):
 
 
 def make_key(url):
+    """ Amends url so that it can be used as an object key.
+    """
     return f'{USER}/{url.replace("/","|")}.json'
 
 
 @app.agent(successful_urls)
 async def process_html(pages):
-    """Extract text and yield any URLs found on the page"""
+    """ Saves to S3, extracts URLS from page
+    """
     async for page in pages:
-        # Extract text and save to S3
         text = _text_from_html(page.html)
         s3 = boto3.resource('s3')
         object = s3.Object(BUCKET, make_key(page.url))
         object.put(Body=json.dumps(text))
-        # Don't go beyond MAX DEPTH
         depth = int(page.depth)
-        if depth == MAX_DEPTH:
+        if depth == MAX_DEPTH: # prevents continuation once max depth reached
             continue
-        # Yield any URLs found
         for next_url in _urls_from_html(page.html):
-            # Don't go to external URLs
+            # Filters for next URLs
             if page.domain not in next_url:
                 continue
-            # Don't do email addresses
             if "@" in next_url:
                 continue
-            # Require a scheme
             if not next_url.startswith('http://'):
                 continue
             urls=URL(url=next_url,
