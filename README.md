@@ -5,7 +5,7 @@ In Jan 2021 we did a mini hack-week to play around with Faust and Kafka. In the 
 
 Our various attempts can be found the `sandbox` directory:
 
-* [Joel's attempt](sandox/joel/)
+* [Joel's attempt](sandbox/joel/)
 
 # Tutorials and documentation
 
