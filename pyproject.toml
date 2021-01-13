@@ -7,6 +7,11 @@ authors = ["bishax <alex.bishop@nesta.org.uk>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 faust = {extras = ["rocksdb"], version = "^1.10.4"}
+beautifulsoup4 = "^4.9.3"
+lxml = "^4.6.2"
+toolz = "^0.11.1"
+aioboto3 = "^8.2.0"
+urllib3 = "<1.26"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
