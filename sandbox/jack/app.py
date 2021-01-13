@@ -1,7 +1,8 @@
 import faust
 import requests
-import aioboto3
+import boto3
 import json
+from mode.utils.aiter import aiter
 
 from helpers import _tag_visible, _text_from_html, _urls_from_html
 
@@ -11,14 +12,16 @@ MAX_DEPTH = 2
 PARTITIONS = 4
 
 class URL(faust.Record, serializer="json"):
-    name: str
+    domain: str
     url: str
+    depth: int
 
 class SuccessPage(faust.Record, serializer="json"):
     url: str
     html: str
     status_code: int
-
+    domain: str
+    depth: int
 
 app = faust.App(
     "scraper",
@@ -41,20 +44,10 @@ async def process_url(urls):
                     url=url.url,
                     html=r.content.decode('utf-8'),
                     status_code=r.status_code,
+                    depth=url.depth,
+                    domain=url.domain
                 )
         await process_html.send(value=page)
-
-async def already_done_url(url):
-    """
-    Dummy function: need to work out how to check if
-    RenderedPage already exists for this URL
-    """
-    async with aioboto3.resource("s3") as s3:
-        bucket = await s3.Bucket(BUCKET)
-        objs = bucket.objects.filter(Prefix=make_key(url))
-        async for _ in objs:
-            return True
-    return False
 
 
 def make_key(url):
@@ -67,9 +60,9 @@ async def process_html(pages):
     async for page in pages:
         # Extract text and save to S3
         text = _text_from_html(page.html)
-        async with aioboto3.resource("s3") as s3:
-            object = await s3.Object(BUCKET, make_key(page.url))
-            await object.put(Body=json.dumps(text))
+        s3 = boto3.resource('s3')
+        object = s3.Object(BUCKET, make_key(page.url))
+        object.put(Body=json.dumps(text))
         # Don't go beyond MAX DEPTH
         depth = int(page.depth)
         if depth == MAX_DEPTH:
@@ -85,16 +78,7 @@ async def process_html(pages):
             # Require a scheme
             if not next_url.startswith('http://'):
                 continue
-            # Don't do files
-            # if any(next_url.endswith(f'.{suffix}') for suffix in ['pdf', 'jpg', 'jpeg',\
-            #                     'png', 'doc', 'docx',\
-            #                     'txt', 'csv', 'xls', 'xlsx']:
-            #                     continue
-            # # Don't redo any done pages
-            if await already_done_url(next_url):
-                continue
-            # Yield away
             urls=URL(url=next_url,
                     domain=page.domain,
                     depth=depth+1)
-            await process_url.send(value=URL)
+            await process_url.send(value=urls)
