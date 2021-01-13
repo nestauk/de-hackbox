@@ -12,3 +12,4 @@ app:
   broker : 'kafka://localhost:9092'
   store: 'rocksdb://'
   topic_partitions: 4
+  topic_allow_declare: false

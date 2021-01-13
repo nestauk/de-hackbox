@@ -4,10 +4,9 @@ import faust
 import requests
 from mode.utils.aiter import aiter
 
+from config import config
 from utils import (already_done_url, put_to_s3, skip_this_url, text_from_html,
                    urls_from_html)
-
-from . import config
 
 # Global app declaration
 app = faust.App(**config['app'])
