@@ -51,7 +51,7 @@ async def already_done_url(url):
     bucket = config['bucket']
     async with aioboto3.resource("s3") as s3:
         bucket = await s3.Bucket(bucket)
-        objs = bucket.objects.filter(Prefix=make_key(url))
+        objs = bucket.objects.filter(Prefix=_make_key(url))
         async for _ in objs:
             return True
     return False
@@ -62,7 +62,7 @@ async def put_to_s3(url, text):
     from the URL"""
     bucket = config['bucket']
     async with aioboto3.resource("s3") as s3:
-        obj = await s3.Object(bucket, make_key(url))
+        obj = await s3.Object(bucket, _make_key(url))
         await obj.put(Body=json.dumps(text))
 
 

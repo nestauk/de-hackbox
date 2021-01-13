@@ -70,7 +70,7 @@ async def process_text(pages):
             if await already_done_url(next_url):
                 continue
             # If is external
-            if (domain not in next_url):
+            if (page.domain not in next_url):
                 # Exception is a path from the current page
                 if next_url.startswith('/'):
                     next_url = f'{url}{next_url}'
