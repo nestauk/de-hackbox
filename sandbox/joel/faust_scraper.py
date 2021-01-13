@@ -17,7 +17,7 @@ class UrlEvent(faust.Record, serializer="json"):
     url: str
     domain: str
     depth: Optional[int] = 1
-    parent: Optional[str]
+    parent: Optional[str] = ''
 
 
 class RenderedPage(faust.Record, serializer="json"):
