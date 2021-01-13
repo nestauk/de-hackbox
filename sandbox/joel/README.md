@@ -1,5 +1,5 @@
-faust-scraper
-=============
+faust-scraper [Joel's attempt!]
+===============================
 
 Crawling a university website using Faust and Kafka, just to see how it works.
 
