@@ -15,7 +15,7 @@ Finally, make sure you have installed the requirements as listed in `requirement
 Running the pipeline
 --------------------
 
-You can run start the Faust server form this directory with:
+You can run start the Faust server from this directory with:
 
 ```bash
 bash bin/start_faust_worker.sh

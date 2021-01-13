@@ -16,7 +16,7 @@ app = faust.App(**config['app'])
 class UrlEvent(faust.Record, serializer="json"):
     url: str
     domain: str
-    depth: int
+    depth: Optional[int] = 1
     parent: Optional[str]
 
 
