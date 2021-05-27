@@ -1,0 +1,5 @@
+aioboto3==8.2.0
+requests==2.22.0
+faust==1.10.4
+beautifulsoup4==4.9.3
+PyYAML==5.3.1

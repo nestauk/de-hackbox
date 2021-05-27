@@ -1,0 +1,15 @@
+# ----- Global-ish settings ----- #
+bucket: 'faust-sandbox'  # S3 bucket to write web page text to
+user: 'joel'  # S3 bucket subfolder, nominally your name
+max_depth: 2  # Maximum depth of the website to scrape
+parser: 'html.parser'  # HTML parser for BeautifulSoup
+file_suffixes:
+  ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx',
+  'txt', 'csv', 'xls', 'xlsx']
+# ----- Faust App settings ----- #
+app:
+  id: 'faust_scraper'
+  broker : 'kafka://localhost:9092'
+  store: 'rocksdb://'
+  topic_partitions: 4
+  topic_allow_declare: false
