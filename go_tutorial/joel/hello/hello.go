@@ -1,8 +1,8 @@
-package main
+package hello
 
 import (
-	"example.com/greetings"
 	"fmt"
+	"go_tutorial/joel/greetings"
 	"log"
 	"rsc.io/quote"
 )
