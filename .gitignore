@@ -1,7 +1,7 @@
-go_rest/**
-!go_rest/**/
-!go_rest/**/README.md
-!go_rest/**/*.go
+go*/**
+!go*/**/
+!go*/**/README.md
+!go*/**/*.go
 *~
 *#
 *-data/
