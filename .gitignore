@@ -1,3 +1,7 @@
+go*/**
+!go*/**/
+!go*/**/README.md
+!go*/**/*.go
 *~
 *#
 *-data/
