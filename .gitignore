@@ -1,4 +1,4 @@
-go_rest/**/*
+go_rest/**
 !go_rest/**/README.md
 !go_rest/**/*.go
 *~
